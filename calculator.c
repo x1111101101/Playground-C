@@ -54,7 +54,7 @@ int calc(int a, int op, int b) {
 		case '+':
 		case '-': return a+b;
 	}
-	printf("error");
+	printf("error - 잘못된 연산자 사용");
 	exit(1);
 }
 
@@ -68,8 +68,8 @@ int compute(int initial) {
 	while(1) {
 		int rv = 0;
 		token t = getTokenExceptOperator();
-		printf("value1: %d, temp1: %d\n", value, temp);
-		printf("token 1: %d %d\n", t.type, t.value);
+		//printf("value1: %d, temp1: %d\n", value, temp);
+		//printf("token 1: %d %d\n", t.type, t.value);
 		if(t.type == 2) {
 			value += temp*tempMul;
 			return value;
@@ -80,8 +80,8 @@ int compute(int initial) {
 			rv = t.value;
 		}
 		token rt = getToken(); // rb or op
-		printf("token 2: %d %d\n", rt.type, rt.value);
-		printf("temp2: %d\n", temp);
+		//printf("token 2: %d %d\n", rt.type, rt.value);
+		//printf("temp2: %d\n", temp);
 		int lastOpType = lastOp == '*' || lastOp =='/';
 		temp = calc(temp, lastOp, rv);
 		if(rt.type == 2) {
@@ -103,10 +103,42 @@ int compute(int initial) {
 	}
 }
 
+void removeSpaces() {
+	int i = 0;
+	
+	
+}
+
+/**
+자신 보다 큰 수가 1개만 있는 경우가 중간 값 
+*/
+
+void solve() {
+	int a,b,c,t;
+	int b1, b2;	
+	scanf("%d%d%d", &a, &b, &c);
+	if(a<b) {
+		b1 = a;
+	}
+
+	if(a<b) {
+		t = a; a = b; b = t;
+	}
+	if(b<c)  {
+		t = b; b = c; c = t;
+	}
+	if(a<b) {
+		t = a; a = b; b = t;
+	}
+	printf("중간값: %d\n", b);
+}
+
 int main(void) {
+	solve();
 	char input = 'N';
 	do {
 		printf("수식 입력: ");
+		idx = 0;
 		scanf("%s", exp);
 		int value = compute(0);
 		printf("result: %d\n", value);
