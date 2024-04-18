@@ -51,8 +51,8 @@ int calc(int a, int op, int b) {
 	switch(op) {
 		case '*': return a*b;
 		case '/': return a/b;
-		case '+': return a+b;
-		case '-': return a-b;
+		case '+':
+		case '-': return a+b;
 	}
 	printf("error");
 	exit(1);
@@ -85,8 +85,8 @@ int compute(int initial) {
 		int lastOpType = lastOp == '*' || lastOp =='/';
 		temp = calc(temp, lastOp, rv);
 		if(rt.type == 2) {
-			value += temp;
-			return value*tempMul;
+			value += temp*tempMul;
+			return value;
 		}
 		char op = rt.value;
 		printf("calcT: %d\n", temp);
@@ -104,8 +104,14 @@ int compute(int initial) {
 }
 
 int main(void) {
-	printf("수식 입력");
-	scanf("%s", exp);
-	int value = compute(0);
-	printf("result: %d\n", value);
+	char input = 'N';
+	do {
+		printf("수식 입력: ");
+		scanf("%s", exp);
+		int value = compute(0);
+		printf("result: %d\n", value);
+		printf("다른 수식을 입력겠습니까? (Y/N): ");
+		fflush(stdin);
+		scanf("%c", &input);
+	} while(input == 'Y' || input == 'y');
 }
