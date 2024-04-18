@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void printIdx();
-
 static char exp[1000];
 static int idx = 0;
 
@@ -51,18 +49,14 @@ token getToken() {
 
 int calc(int a, int op, int b) {
 	switch(op) {
-		case '+': return a+b;
-		case '-': return a-b;
 		case '*': return a*b;
 		case '/': return a/b;
+		case '+': return a+b;
+		case '-': return a-b;
 	}
 	printf("error");
 	exit(1);
 }
-void printIdx() {
-	printf("idx: %d\n", idx);
-}
-
 
 // 0+ (p,num) (op, p) (p,num) (op, p) (p,num) (op, p)
 // 3+2*3*4+5
@@ -76,7 +70,6 @@ int compute(int initial) {
 		token t = getTokenExceptOperator();
 		printf("value1: %d, temp1: %d\n", value, temp);
 		printf("token 1: %d %d\n", t.type, t.value);
-		//printIdx();
 		if(t.type == 2) {
 			value += temp*tempMul;
 			return value;
@@ -87,16 +80,15 @@ int compute(int initial) {
 			rv = t.value;
 		}
 		token rt = getToken(); // rb or op
-		printf("token2: %d %d\n", rt.type, rt.value);
+		printf("token 2: %d %d\n", rt.type, rt.value);
 		printf("temp2: %d\n", temp);
+		int lastOpType = lastOp == '*' || lastOp =='/';
 		temp = calc(temp, lastOp, rv);
-		//printIdx();
 		if(rt.type == 2) {
 			value += temp;
 			return value*tempMul;
 		}
 		char op = rt.value;
-		
 		printf("calcT: %d\n", temp);
 		lastOp = op;
 		if(op == '+') {
