@@ -1,8 +1,15 @@
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#define EXP_SCALE   (1000)
 
-static char exp[1000];
+void solve2();
+
+static char exp[EXP_SCALE];
 static int idx = 0;
+
+int exceptionCaused = 0;
 
 typedef struct {
 	int type; // 0: number, 1: (, 2: ), 3: operator
@@ -20,31 +27,35 @@ int getNumberToken() {
 		return -getNumberToken();
 	}
 	int value = 0;
-	while(isNumeric(c)) {
-		int digit = c-'0';
+	if(!isNumeric(c)) {
+	   exceptionCaused = 1;
+	   return 0;
+	}
+	do {
+	    int digit = c-'0';
 		value *= 10;
 		value += digit;
 		c = exp[++idx];
-	}
+	} while(isNumeric(c));
 	return value;
 }
 
 token getTokenExceptOperator() {
 	char c = exp[idx++];
-	if(c == '(') return {1,0};
-	if(c == ')' || c == ';' || c == '\0') return {2,0};
+	if(c == '(') return (token){1,0};
+	if(c == ')' || c == '\0') return (token){2,0};
 	idx--;
 	int v = getNumberToken();
-	return {0,v};
+	return (token){0,v};
 }
 
 token getToken() {
 	char c = exp[idx++];
-	if(c == '(') return {1,0};
-	if(c == ')' || c == ';' || c == '\0') return {2,0};
-	if(!isNumeric(c)) return {3, c};
+	if(c == '(') return (token){1,0};
+	if(c == ')' || c == '\0') return (token){2,0};
+	if(!isNumeric(c)) return (token){3, c};
 	idx--;
-	return {0,getNumberToken()};
+	return (token){0,getNumberToken()};
 }
 
 int calc(int a, int op, int b) {
@@ -54,8 +65,8 @@ int calc(int a, int op, int b) {
 		case '+':
 		case '-': return a+b;
 	}
-	printf("error - 잘못된 연산자 사용");
-	exit(1);
+	exceptionCaused = 1;
+	return 0;
 }
 
 // 0+ (p,num) (op, p) (p,num) (op, p) (p,num) (op, p)
@@ -68,28 +79,18 @@ int compute(int initial) {
 	while(1) {
 		int rv = 0;
 		token t = getTokenExceptOperator();
-		//printf("value1: %d, temp1: %d\n", value, temp);
-		//printf("token 1: %d %d\n", t.type, t.value);
 		if(t.type == 2) {
 			value += temp*tempMul;
 			return value;
 		}
-		if(t.type == 1) {
-			rv = compute(0);
-		} else {
-			rv = t.value;
-		}
+		rv = t.type == 1 ? compute(0) : t.value;
 		token rt = getToken(); // rb or op
-		//printf("token 2: %d %d\n", rt.type, rt.value);
-		//printf("temp2: %d\n", temp);
-		int lastOpType = lastOp == '*' || lastOp =='/';
 		temp = calc(temp, lastOp, rv);
 		if(rt.type == 2) {
 			value += temp*tempMul;
 			return value;
 		}
 		char op = rt.value;
-		printf("calcT: %d\n", temp);
 		lastOp = op;
 		if(op == '+') {
 			value += temp*tempMul;
@@ -104,23 +105,58 @@ int compute(int initial) {
 }
 
 void removeSpaces() {
-	int i = 0;
-	
-	
+	int t = 0;
+	for(int i = 0; i<EXP_SCALE; i++) {
+	    char c = exp[i];
+	    if(c == ' ') continue;
+	    exp[t++] = c;
+	    if(c == '\n') return;
+	}
 }
 
-/**
-자신 보다 큰 수가 1개만 있는 경우가 중간 값 
-*/
+
+
+void clearBuffer() {
+    char c;
+    while((c=getchar()) != '\n' && c != EOF);
+}
+
+int main(void) {
+	char input = 'N';
+	do {
+	    exceptionCaused = 0;
+		printf("수식 입력: ");
+		idx = 0;
+		scanf("%[^\n]s", exp);
+		removeSpaces();
+		int value = compute(0);
+		if(exceptionCaused) {
+		    printf("잘못된 수식입니다.\n");
+		} else {
+		    printf("Result: %d\n", value);
+		}
+		printf("다른 수식을 입력겠습니까? (Y/N): ");
+		clearBuffer();
+		scanf("%c", &input);
+	} while(input == 'Y' || input == 'y');
+	return 0;
+}
+
+// 번외 문제 - 중간값 구하기
+#define CENTER(x,a,b)   ((x > a && x < b) || (x < a && x > b))
+void solve2() {
+    int a,b,c,t;
+	int b1, b2;	
+	scanf("%d%d%d", &a, &b, &c);
+	if(CENTER(a,b,c)) printf("%d", a);
+	else if (CENTER(b,a,c)) printf("%d", b);
+	else printf("%d", c);
+}
 
 void solve() {
 	int a,b,c,t;
 	int b1, b2;	
 	scanf("%d%d%d", &a, &b, &c);
-	if(a<b) {
-		b1 = a;
-	}
-
 	if(a<b) {
 		t = a; a = b; b = t;
 	}
@@ -131,19 +167,4 @@ void solve() {
 		t = a; a = b; b = t;
 	}
 	printf("중간값: %d\n", b);
-}
-
-int main(void) {
-	solve();
-	char input = 'N';
-	do {
-		printf("수식 입력: ");
-		idx = 0;
-		scanf("%s", exp);
-		int value = compute(0);
-		printf("result: %d\n", value);
-		printf("다른 수식을 입력겠습니까? (Y/N): ");
-		fflush(stdin);
-		scanf("%c", &input);
-	} while(input == 'Y' || input == 'y');
 }
